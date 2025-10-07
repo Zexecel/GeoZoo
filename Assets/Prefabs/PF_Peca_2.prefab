@@ -9,9 +9,17 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 935942634616324926, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+      propertyPath: SpriteVerso
+      value: 
+      objectReference: {fileID: 21300000, guid: a0eb985ce515a354291b4d37473e1977, type: 3}
+    - target: {fileID: 935942634616324926, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
       propertyPath: spriteVerso
       value: 
       objectReference: {fileID: 21300000, guid: a0eb985ce515a354291b4d37473e1977, type: 3}
+    - target: {fileID: 935942634616324926, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+      propertyPath: SpriteFrente
+      value: 
+      objectReference: {fileID: 21300000, guid: 2243ab0f7cd029249b2f5a6ac54a2337, type: 3}
     - target: {fileID: 935942634616324926, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
       propertyPath: spriteFrente
       value: 
@@ -100,8 +108,41 @@ PrefabInstance:
       propertyPath: m_Name
       value: PF_Peca_2
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: -6918107705160134721, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3410935151251268038, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -3595925170217485989}
   m_SourcePrefab: {fileID: 100100000, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+--- !u!1 &8904426937450606356 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3410935151251268038, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+  m_PrefabInstance: {fileID: 6108273546953232082}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-3595925170217485989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8904426937450606356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 855ea9cdae4fe40449bdc1da3d0ad33c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Peca
+  DragLayer: {fileID: 0}
+  GridRoot: {fileID: 0}
+  GridLayout: {fileID: 0}
+  MaoRoot: {fileID: 0}
+  Raycaster: {fileID: 0}
+  ajustarParaCellNaGrelha: 1
+  alphaDuranteDrag: 0.85
+  bloquearCelulaOcupada: 1
+  permitirRotacao: 1
+  teclaRotCCW: 113
+  teclaRotCW: 101
+  tempoRotacao: 0.12

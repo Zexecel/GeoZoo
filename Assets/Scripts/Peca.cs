@@ -1,156 +1,348 @@
+// Assets/Scripts/Peca.cs
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-/// <summary>
-/// Peça arrastável:
-/// - Não herda escala/anchors do layout ao começar drag (evita offset).
-/// - É reparentada para o UI_DragLayer (Canvas com Sorting Order alto).
-/// - Durante o drag segue o rato no Canvas do DragLayer (sem drift).
-/// - No fim, tenta encaixar; se não encaixar, volta à barra no índice original.
-/// 
-/// Requisitos na cena:
-/// - UI_DragLayer: GameObject irmão (não filho da barra), com Canvas (Override Sorting=ON; Sorting Order alto) e GraphicRaycaster.
-/// - Atribuir no Inspector da peça:
-///     DragLayer  → RectTransform do UI_DragLayer
-///     DragCanvas → Canvas do UI_DragLayer (opcional; se null, é obtido por GetComponentInParent)
-/// </summary>
-[RequireComponent(typeof(RectTransform)), RequireComponent(typeof(Image))]
+[DisallowMultipleComponent]
 public class Peca : MonoBehaviour,
-    IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler, IPointerDownHandler
+    IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerDownHandler
 {
+    // -------- Foco exclusivo (apenas uma peça focada de cada vez) --------
+    static Peca _focada;
+    static void DefinirFoco(Peca nova) => _focada = nova;
+    // ---------------------------------------------------------------------
+
     [Header("Referências")]
-    public RectTransform DragLayer;   // UI_DragLayer (irmão do GRD_Tabuleiro / UI_BarraPecas)
-    public Canvas DragCanvas;         // Canvas do UI_DragLayer (se ficar a null é apanhado no BeginDrag)
-    public RectTransform GridRoot;    // GRD_Tabuleiro (opcional; para validações tuas)
-    public GridValidator GridValidator; // (opcional) se usares validação automática
+    public RectTransform DragLayer;         // UI_DragLayer (Canvas com Override Sorting ON)
+    public RectTransform GridRoot;          // GRD_Tabuleiro
+    public GridLayoutGroup GridLayout;      // GridLayout do tabuleiro
+    public RectTransform MaoRoot;           // UI_BarraPecas
+    public GraphicRaycaster Raycaster;      // GraphicRaycaster do Canvas principal
 
-    [Header("Opções")]
-    public bool VoltarParaBarraSeFalhar = true;
+    [Header("Comportamento")]
+    public bool ajustarParaCellNaGrelha = true;
+    [Range(0.2f, 1f)] public float alphaDuranteDrag = 0.85f;
+    public bool bloquearCelulaOcupada = true;
 
-    // estado interno
+    [Header("Rotação")]
+    public bool permitirRotacao = true;
+    public KeyCode teclaRotCCW = KeyCode.Q;   // -90°
+    public KeyCode teclaRotCW  = KeyCode.E;   // +90°
+    [Range(0.05f, 0.3f)] public float tempoRotacao = 0.12f;
+
+    // internos
     RectTransform _rt;
     CanvasGroup _cg;
+    Canvas _canvas;
+    Camera _uiCam; // null em Overlay
+    EventSystem _eventSystem;
+    PecaFlip _flip;
 
+    Vector2 _sizeOriginalNaMao;
     Transform _parentOriginal;
-    int _siblingIndexOriginal = -1;
+    int _siblingIndexOriginal;
+    bool _estavaNaGrelha;
 
+    bool _aRodar;
     bool _aArrastar;
-    static Peca _selecionada; // se quiseres usar single-selection
-    Vector2 _dragLocalPosCache;
+
+    readonly List<RaycastResult> _hits = new List<RaycastResult>(16);
+
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        if (!Application.isPlaying) TryAutoAssignReferences();
+    }
+#endif
 
     void Awake()
     {
-        _rt = GetComponent<RectTransform>();
-        _cg = GetComponent<CanvasGroup>();
-        if (_cg == null) _cg = gameObject.AddComponent<CanvasGroup>();
+        TryAutoAssignReferences();
+
+        _rt     = GetComponent<RectTransform>() ?? gameObject.AddComponent<RectTransform>();
+        _cg     = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
+        _canvas = GetComponentInParent<Canvas>();
+        _uiCam  = (_canvas && _canvas.renderMode == RenderMode.ScreenSpaceCamera) ? _canvas.worldCamera : null;
+        _eventSystem = EventSystem.current;
+        _flip   = GetComponent<PecaFlip>();
+
+        _sizeOriginalNaMao = _rt.sizeDelta;
+
+        if (!GridLayout && GridRoot)
+            GridLayout = GridRoot.GetComponent<GridLayoutGroup>();
     }
 
-    // ---------- Pointer ----------
+    void Update()
+    {
+        if (!PermissoesJogo.PodeInteragir || !permitirRotacao) return;
+
+        // roda se estiver a arrastar OU se for a focada
+        bool possoRodar = _aArrastar || ReferenceEquals(_focada, this);
+        if (possoRodar && !_aRodar)
+        {
+            if (Input.GetKeyDown(teclaRotCCW)) StartCoroutine(RodarSuave(-90f));
+            else if (Input.GetKeyDown(teclaRotCW)) StartCoroutine(RodarSuave(+90f));
+        }
+    }
+
+    // -------------------------------------------------------------
+    // INTERAÇÃO
+    // -------------------------------------------------------------
     public void OnPointerDown(PointerEventData eventData)
     {
-        _selecionada = this;
-    }
+        if (!PermissoesJogo.PodeInteragir) return;
 
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        // Botão direito → flip frente/verso se tiveres esse sistema noutro script (ex.: PecaFlip)
-        if (eventData.button == PointerEventData.InputButton.Right)
+        // esta peça fica focada
+        DefinirFoco(this);
+
+        // botão direito = flip frente/verso só desta peça
+        if (eventData.button == PointerEventData.InputButton.Right && _flip != null)
         {
-            var flip = GetComponent<PecaFlip>();
-            if (flip != null) flip.Toggle();
+            bool estaNaFrente = TryGetImageSprite() == _flip.SpriteFrente;
+            if (estaNaFrente) StartCoroutine(_flip.FlipParaVerso());
+            else              StartCoroutine(_flip.FlipParaFrente());
         }
     }
 
-    // ---------- Drag ----------
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (!PermissoesJogo.PodeInteragir) return;
+        if (eventData.button != PointerEventData.InputButton.Left) return;
+        if (DragLayer == null) return;
+
         _aArrastar = true;
+        DefinirFoco(this);
 
-        // Canvas do DragLayer
-        if (DragCanvas == null && DragLayer != null)
-            DragCanvas = DragLayer.GetComponentInParent<Canvas>();
+        _parentOriginal   = _rt.parent;
+        _siblingIndexOriginal = _rt.GetSiblingIndex();
+        _estavaNaGrelha   = EstaEmGrelha(_rt);
 
-        if (DragLayer == null || DragCanvas == null)
-        {
-            Debug.LogWarning("[Peca] DragLayer/Canvas não definidos.");
-            _aArrastar = false;
-            return;
-        }
+        _rt.anchorMin = _rt.anchorMax = new Vector2(0.5f, 0.5f);
+        _rt.pivot     = new Vector2(0.5f, 0.5f);
 
-        // guardar parent + índice originais (para voltar se falhar)
-        _parentOriginal = transform.parent;
-        _siblingIndexOriginal = transform.GetSiblingIndex();
+        Vector3 worldAntes = _rt.position;
+        _rt.SetParent(DragLayer, worldPositionStays: true);
+        _rt.position = worldAntes;
+        _rt.SetAsLastSibling();
 
-        // pôr o DragLayer por cima de tudo (no mesmo Canvas, como irmão)
-        DragLayer.SetAsLastSibling();
-
-        // Reparentar para o DragLayer SEM herdar transform (evita offset e escala do layout)
-        transform.SetParent(DragLayer, false);
-
-        // leve transparência durante drag (opcional)
         _cg.blocksRaycasts = false;
-        _cg.alpha = 0.9f;
+        _cg.alpha = alphaDuranteDrag;
 
-        // posicionar imediatamente debaixo do rato
-        AtualizarPosicaoPeloRato(eventData);
-        _rt.SetAsLastSibling(); // esta peça acima das outras no DragLayer
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            DragLayer, eventData.position, _uiCam, out var local);
+        _rt.anchoredPosition = local;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (!_aArrastar) return;
-        AtualizarPosicaoPeloRato(eventData);
+        if (!PermissoesJogo.PodeInteragir || DragLayer == null) return;
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            DragLayer, eventData.position, _uiCam, out var local);
+        _rt.anchoredPosition = local;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (!_aArrastar) return;
         _aArrastar = false;
+
+        if (!PermissoesJogo.PodeInteragir) { VoltarParaOrigem(); return; }
 
         _cg.blocksRaycasts = true;
         _cg.alpha = 1f;
 
-        // Tenta detetar drop válido via raycast UI
-        var alvoValido = TentarColocarNaGrelhaOuOutroAlvo(eventData);
-
-        if (!alvoValido && VoltarParaBarraSeFalhar && _parentOriginal != null)
+        RectTransform celula = EncontrarCelulaDebaixoDoCursor(eventData);
+        if (celula != null && (CelulaEstaLivre(celula) || !bloquearCelulaOcupada))
         {
-            // voltar ao parent original e restabelecer ordem
-            transform.SetParent(_parentOriginal, false);
-            if (_siblingIndexOriginal >= 0)
-                transform.SetSiblingIndex(_siblingIndexOriginal);
+            ColocarNaCelula(celula);
+            return;
         }
+
+        VoltarParaMao();
     }
 
-    // ---------- Helpers ----------
-    void AtualizarPosicaoPeloRato(PointerEventData eventData)
+    // -------------------------------------------------------------
+    // LÓGICA DE COLOCAÇÃO
+    // -------------------------------------------------------------
+    void ColocarNaCelula(RectTransform celula)
     {
-        // Para Screen Space Overlay → worldCamera = null
-        var cam = DragCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : DragCanvas.worldCamera;
-        Vector2 localPoint;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            (RectTransform)DragCanvas.transform, eventData.position, cam, out localPoint);
+        _rt.SetParent(celula, worldPositionStays: false);
+        _rt.anchorMin = _rt.anchorMax = new Vector2(0.5f, 0.5f);
+        _rt.pivot     = new Vector2(0.5f, 0.5f);
+        _rt.anchoredPosition = Vector2.zero;
+        _rt.localScale = Vector3.one;
 
-        _rt.anchoredPosition = localPoint; // sem drift/offset
+        if (ajustarParaCellNaGrelha && GridLayout)
+            _rt.sizeDelta = GridLayout.cellSize;
+
+        _estavaNaGrelha = true;
     }
 
-    /// <summary>
-    /// Aqui decides a lógica de "encaixe": grelha/célula ou outro alvo.
-    /// Se não encaixar, retorna false para voltar à barra (se a flag estiver ativa).
-    /// </summary>
-    bool TentarColocarNaGrelhaOuOutroAlvo(PointerEventData eventData)
+    void VoltarParaMao()
     {
-        // Exemplo básico: se tiveres um GridValidator, usa-o.
-        if (GridValidator != null)
+        if (MaoRoot == null) { VoltarParaOrigem(); return; }
+
+        _rt.SetParent(MaoRoot, worldPositionStays: false);
+        _rt.anchorMin = _rt.anchorMax = new Vector2(0.5f, 0.5f);
+        _rt.pivot     = new Vector2(0.5f, 0.5f);
+        _rt.localRotation = Quaternion.identity;
+        _rt.localScale    = Vector3.one;
+        _rt.SetAsLastSibling();
+        _rt.sizeDelta = _sizeOriginalNaMao;
+
+        _estavaNaGrelha = false;
+    }
+
+    void VoltarParaOrigem()
+    {
+        if (_parentOriginal == null) { VoltarParaMao(); return; }
+
+        _rt.SetParent(_parentOriginal, worldPositionStays: false);
+        _rt.SetSiblingIndex(_siblingIndexOriginal);
+        _rt.anchorMin = _rt.anchorMax = new Vector2(0.5f, 0.5f);
+        _rt.pivot     = new Vector2(0.5f, 0.5f);
+        _rt.localRotation = Quaternion.identity;
+        _rt.localScale    = Vector3.one;
+
+        if (ajustarParaCellNaGrelha && EstaEmGrelha(_rt) && GridLayout)
+            _rt.sizeDelta = GridLayout.cellSize;
+        else
+            _rt.sizeDelta = _sizeOriginalNaMao;
+    }
+
+    // -------------------------------------------------------------
+    // ROTAÇÃO
+    // -------------------------------------------------------------
+    System.Collections.IEnumerator RodarSuave(float delta)
+    {
+        _aRodar = true;
+        float t = 0f;
+        Quaternion ini = _rt.localRotation;
+        Quaternion fim = Quaternion.Euler(0, 0, _rt.localEulerAngles.z + delta);
+
+        while (t < tempoRotacao)
         {
-            if (GridValidator.TentarEncaixar(this, _rt))
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / tempoRotacao);
+            _rt.localRotation = Quaternion.Slerp(ini, fim, k);
+            yield return null;
+        }
+        _rt.localRotation = fim;
+        _aRodar = false;
+    }
+
+    // -------------------------------------------------------------
+    // RAYCAST / GRID
+    // -------------------------------------------------------------
+    RectTransform EncontrarCelulaDebaixoDoCursor(PointerEventData eventData)
+    {
+        if (Raycaster == null || GridRoot == null) return null;
+
+        _hits.Clear();
+        Raycaster.Raycast(eventData, _hits);
+
+        RectTransform melhor = null;
+        float melhorDist = float.MaxValue;
+
+        for (int i = 0; i < _hits.Count; i++)
+        {
+            var rt = _hits[i].gameObject.GetComponent<RectTransform>();
+            if (rt == null) continue;
+            if (!TransformEhFilhoDe(rt, GridRoot)) continue;
+
+            var candidato = SobeAteFilhoDiretoDe(rt, GridRoot);
+            if (candidato == null) continue;
+
+            Vector2 screen = eventData.position;
+            Vector2 centerScreen = WorldToScreenCenter(candidato);
+            float dist = (screen - centerScreen).sqrMagnitude;
+
+            if (dist < melhorDist) { melhorDist = dist; melhor = candidato; }
+        }
+        return melhor;
+    }
+
+    bool CelulaEstaLivre(RectTransform celula) => celula.childCount == 0;
+
+    // -------------------------------------------------------------
+    // HELPERS
+    // -------------------------------------------------------------
+    bool EstaEmGrelha(Transform t) => GridRoot && t && t.IsChildOf(GridRoot);
+
+    static bool TransformEhFilhoDe(Transform t, Transform pai)
+        => (t && pai) && (t == pai || t.IsChildOf(pai));
+
+    static RectTransform SobeAteFilhoDiretoDe(Transform t, Transform paiDireto)
+    {
+        if (!t || !paiDireto) return null;
+        var atual = t;
+        while (atual && atual.parent != paiDireto) atual = atual.parent;
+        return (atual && atual.parent == paiDireto) ? atual as RectTransform : null;
+    }
+
+    Vector2 WorldToScreenCenter(RectTransform rt)
+    {
+        var corners = new Vector3[4];
+        rt.GetWorldCorners(corners);
+        var c = (corners[0] + corners[2]) * 0.5f;
+        return RectTransformUtility.WorldToScreenPoint(null, c); // Overlay => cam null
+    }
+
+    Sprite TryGetImageSprite()
+    {
+        var img = GetComponent<Image>();
+        return img ? img.sprite : null;
+    }
+
+    void TryAutoAssignReferences()
+    {
+        if (!Raycaster)
+        {
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas) Raycaster = canvas.GetComponent<GraphicRaycaster>();
+        }
+
+        if (!DragLayer)
+        {
+            var go = GameObject.Find("UI_DragLayer");
+            if (go) DragLayer = go.transform as RectTransform;
+            if (!DragLayer)
             {
-                return true; // ficou na grelha
+                var canvas = GetComponentInParent<Canvas>();
+                if (canvas) DragLayer = canvas.transform as RectTransform;
             }
         }
 
-        // Sem validação → considera falha
-        return false;
+        if (!GridRoot)
+        {
+            var go = GameObject.Find("GRD_Tabuleiro");
+            if (go) GridRoot = go.transform as RectTransform;
+
+            if (!GridRoot)
+            {
+                var glgUp = GetComponentInParent<GridLayoutGroup>();
+                if (glgUp) GridRoot = glgUp.transform as RectTransform;
+            }
+        }
+        if (!GridLayout && GridRoot)
+        {
+            GridLayout = GridRoot.GetComponent<GridLayoutGroup>() ??
+                         GridRoot.GetComponentInChildren<GridLayoutGroup>(true);
+        }
+
+        if (!MaoRoot)
+        {
+            var go = GameObject.Find("UI_BarraPecas");
+            if (go) MaoRoot = go.transform as RectTransform;
+
+            if (!MaoRoot)
+            {
+                var h = GetComponentInParent<HorizontalLayoutGroup>();
+                var v = GetComponentInParent<VerticalLayoutGroup>();
+                if (h) MaoRoot = h.transform as RectTransform;
+                else if (v) MaoRoot = v.transform as RectTransform;
+            }
+        }
     }
 }

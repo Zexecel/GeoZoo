@@ -1,141 +1,114 @@
 // Assets/Scripts/PecaFlip.cs
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using System.Collections;
 
-[RequireComponent(typeof(Image))]
+[ExecuteAlways] // também actualiza no Editor
 [DisallowMultipleComponent]
-public class PecaFlip : MonoBehaviour, IPointerClickHandler
+public class PecaFlip : MonoBehaviour
 {
-    [Header("Estado")]
-    public bool viradaFrente = true;
+    [Header("Sprites")]
+    public Sprite SpriteFrente;
+    public Sprite SpriteVerso;
 
-    [Header("Sprites (opcional)")]
-    public Sprite spriteFrente;
-    public Sprite spriteVerso;
-
-    [Header("Cores fallback")]
-    public Color corFrente = new Color(0.20f, 0.56f, 1f);
-    public Color corVerso  = new Color(0.15f, 0.15f, 0.15f);
+    [Header("Estado Inicial")]
+    public bool iniciarNaFrente = true;  // mão = true; carta saída do deck substitui isto
 
     [Header("Animação")]
-    [Range(0.05f, 0.6f)] public float tempoFlip = 0.18f;
-    public AnimationCurve curva = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    [Range(0.05f, 0.6f)] public float TempoFlip = 0.18f;
+    public AnimationCurve Curva = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
     Image _img;
-    RectTransform _rt;
-    bool _aVirar;
+    bool _viradaFrente;
 
-    void Awake()
+    void OnEnable()
     {
-        _img = GetComponent<Image>();
-        _rt  = GetComponent<RectTransform>();
-        AplicarVisual(viradaFrente);
-    }
+        if (_img == null) _img = GetComponent<Image>();
+        if (_img != null) _img.preserveAspect = true;
 
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        if (!PermissoesJogo.PodeInteragir) return;
-        if (eventData.button == PointerEventData.InputButton.Right)
-            Virar();
-    }
-
-    /// <summary>Inverte frente/verso com animação.</summary>
-    public void Virar()
-    {
-        if (_aVirar) return;
-        StartCoroutine(FazerFlipAnimado(!viradaFrente));
-    }
-
-    /// <summary>
-    /// Alias para compatibilidade com scripts que chamam Toggle().
-    /// Mantém o teu comportamento original sem teres de tocar no Peca.cs.
-    /// </summary>
-    public void Toggle() => Virar();
-
-    public void SetFrente(bool frente, bool animado = false)
-    {
-        if (_aVirar)
+        // No Editor e no Play, mostra já o lado pedido
+        if (!Application.isPlaying)
         {
-            viradaFrente = frente;
-            return;
-        }
-        if (animado) StartCoroutine(FazerFlipAnimado(frente));
-        else { viradaFrente = frente; AplicarVisual(viradaFrente); }
-    }
-
-    // === API usada pelo DeckController (se precisares) ===
-    public void ConfigurarFaces(Sprite frente, Sprite verso)
-    {
-        spriteFrente = frente;
-        spriteVerso  = verso;
-        AplicarVisual(viradaFrente);
-    }
-
-    public void MostrarVerso()  => SetFrente(false, false);
-    public void MostrarFrente() => SetFrente(true,  false);
-
-    public IEnumerator FlipParaFrente(float dur = 0.25f)
-    {
-        if (viradaFrente) yield break;
-        yield return FazerFlipAnimadoExt(true, dur);
-    }
-
-    public IEnumerator FlipParaVerso(float dur = 0.25f)
-    {
-        if (!viradaFrente) yield break;
-        yield return FazerFlipAnimadoExt(false, dur);
-    }
-    // === fim da API ===
-
-    IEnumerator FazerFlipAnimado(bool novoEstadoFrente)
-    {
-        yield return FazerFlipAnimadoExt(novoEstadoFrente, tempoFlip);
-    }
-
-    IEnumerator FazerFlipAnimadoExt(bool novoEstadoFrente, float dur)
-    {
-        _aVirar = true;
-        float half = Mathf.Max(0.01f, dur * 0.5f);
-
-        // 1) 1 -> 0
-        for (float t = 0; t < half; t += Time.unscaledDeltaTime)
-        {
-            float e = curva.Evaluate(t / half);
-            _rt.localScale = new Vector3(Mathf.Lerp(1f, 0f, e), 1f, 1f);
-            yield return null;
-        }
-        _rt.localScale = new Vector3(0f, 1f, 1f);
-
-        viradaFrente = novoEstadoFrente;
-        AplicarVisual(viradaFrente);
-
-        // 2) 0 -> 1
-        for (float t = 0; t < half; t += Time.unscaledDeltaTime)
-        {
-            float e = curva.Evaluate(t / half);
-            _rt.localScale = new Vector3(Mathf.Lerp(0f, 1f, e), 1f, 1f);
-            yield return null;
-        }
-        _rt.localScale = Vector3.one;
-
-        _aVirar = false;
-    }
-
-    void AplicarVisual(bool frente)
-    {
-        if (_img == null) return;
-
-        if (spriteFrente != null || spriteVerso != null)
-        {
-            _img.sprite = frente ? spriteFrente : spriteVerso;
-            _img.color  = Color.white;
+            AplicarEstadoInicialEditor();
         }
         else
         {
-            _img.sprite = null;
-            _img.color  = frente ? corFrente : corVerso;
+            if (iniciarNaFrente) MostrarFrente(); else MostrarVerso();
         }
+    }
+
+    void AplicarEstadoInicialEditor()
+    {
+        if (_img == null) return;
+        // Não mexe se algum dev colocou manualmente um Source Image;
+        // mas se estiver em None, mostramos o inicial para pré-visualizar.
+        if (_img.sprite == null)
+        {
+            _img.sprite = iniciarNaFrente ? SpriteFrente : SpriteVerso;
+        }
+    }
+
+    public void Configurar(Sprite frente, Sprite verso)
+    {
+        SpriteFrente = frente;
+        SpriteVerso  = verso;
+        // não força visual aqui — quem chama decide chamar MostrarVerso/Frente
+    }
+
+    public void MostrarVerso()
+    {
+        if (_img) _img.sprite = SpriteVerso;
+        _viradaFrente = false;
+    }
+
+    public void MostrarFrente()
+    {
+        if (_img) _img.sprite = SpriteFrente;
+        _viradaFrente = true;
+    }
+
+    public IEnumerator FlipParaFrente()
+    {
+        if (_viradaFrente) yield break;
+        yield return FlipInterno(true);
+    }
+    public IEnumerator FlipParaVerso()
+    {
+        if (!_viradaFrente) yield break;
+        yield return FlipInterno(false);
+    }
+
+    IEnumerator FlipInterno(bool mostrarFrente)
+    {
+        if (_img == null) yield break;
+        var rt = (RectTransform)transform;
+
+        float half = Mathf.Max(0.0001f, TempoFlip * 0.5f);
+        float t = 0f;
+
+        // 1) fechar (scaleX 1->0)
+        while (t < half)
+        {
+            t += Time.unscaledDeltaTime;
+            float e = Curva.Evaluate(Mathf.Clamp01(t / half));
+            float sx = Mathf.LerpUnclamped(1f, 0f, e);
+            rt.localScale = new Vector3(Mathf.Max(0.0001f, sx), rt.localScale.y, 1f);
+            yield return null;
+        }
+
+        if (mostrarFrente) MostrarFrente(); else MostrarVerso();
+
+        // 2) abrir (scaleX 0->1)
+        t = 0f;
+        while (t < half)
+        {
+            t += Time.unscaledDeltaTime;
+            float e = Curva.Evaluate(Mathf.Clamp01(t / half));
+            float sx = Mathf.LerpUnclamped(0f, 1f, e);
+            rt.localScale = new Vector3(Mathf.Max(0.0001f, sx), rt.localScale.y, 1f);
+            yield return null;
+        }
+        rt.localScale = new Vector3(1f, rt.localScale.y, 1f);
+        _viradaFrente = mostrarFrente;
     }
 }

@@ -1,99 +1,79 @@
 using UnityEngine;
-using TMPro; // importante — muda de UnityEngine.UI para TMPro
+using TMPro;
 
-/// <summary>
-/// Controla o tempo de jogo e o texto do HUD.
-/// Coloca um (apenas um) na cena e liga os TextMeshProUGUI no Inspector.
-/// </summary>
 public class ControladorJogo : MonoBehaviour
 {
-    public static ControladorJogo Instancia { get; private set; }
+    public static ControladorJogo Instancia;
 
-    [Header("HUD (TextMeshPro)")]
-    public TextMeshProUGUI TXT_Tempo;
-    public TextMeshProUGUI TXT_Zoo;
+    [Header("UI")]
+    public TMP_Text TxtTempo;
+    public TMP_Text TxtZoo;
 
-    // Aliases para compatibilidade com GeoZooSceneBuilder
-    public TextMeshProUGUI TxtTempo
-    {
-        get => TXT_Tempo;
-        set => TXT_Tempo = value;
-    }
+    [Header("Configuração")]
+    public int TempoInicialSeg = 150;
+    public int ContadorZoo = 0;
 
-    public TextMeshProUGUI TxtZoo
-    {
-        get => TXT_Zoo;
-        set => TXT_Zoo = value;
-    }
-
-    [Header("Tempo")]
-    public int SegundosInicio = 150; // 2:30
     float _tempoRestante;
-    bool _timerAtivo;
-
-    int _pontosZoo;
+    bool _timerAtivo = false;
 
     void Awake()
     {
-        if (Instancia != null && Instancia != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
         Instancia = this;
+        _tempoRestante = TempoInicialSeg;
+        AtualizarTempoUI();
+        AtualizarZooUI();
 
-        _tempoRestante = SegundosInicio;
-        AtualizarTextoTempo();
-        AtualizarTextoZoo();
+        // arranca bloqueado (não deixar interagir/timer até comprar carta)
+        PermissoesJogo.BloquearInteracao();
     }
 
     void Update()
     {
-        if (_timerAtivo)
+        if (!_timerAtivo) return;
+
+        _tempoRestante -= Time.deltaTime;
+        if (_tempoRestante < 0f) _tempoRestante = 0f;
+        AtualizarTempoUI();
+
+        if (_tempoRestante <= 0f)
         {
-            _tempoRestante -= Time.deltaTime;
-            if (_tempoRestante < 0f)
-            {
-                _tempoRestante = 0f;
-                _timerAtivo = false;
-                // TODO: fim de jogo
-            }
-            AtualizarTextoTempo();
+            _timerAtivo = false;
+            // TODO: fim de jogo / ecrã de resultados
         }
     }
 
     public void IniciarTimer()
     {
+        if (_timerAtivo) return;
+        _tempoRestante = Mathf.Max(0f, _tempoRestante);
         _timerAtivo = true;
-        Debug.Log("TIMER: iniciou");
     }
 
-    public void PararTimer() => _timerAtivo = false;
+    public void PausarTimer() => _timerAtivo = false;
 
-    public void AddTempo(float segundos)
+    public void AdicionarTempo(int segundos)
     {
-        _tempoRestante += segundos;
-        AtualizarTextoTempo();
+        _tempoRestante += Mathf.Max(0, segundos);
+        AtualizarTempoUI();
     }
 
-    public void AddZoo(int pontos)
+    public void AtualizarZoo(int novoValor)
     {
-        _pontosZoo += pontos;
-        AtualizarTextoZoo();
+        ContadorZoo = novoValor;
+        AtualizarZooUI();
     }
 
-    void AtualizarTextoTempo()
+    void AtualizarTempoUI()
     {
-        if (TXT_Tempo == null) return;
-        int t = Mathf.Max(0, Mathf.FloorToInt(_tempoRestante));
-        int m = t / 60;
-        int s = t % 60;
-        TXT_Tempo.text = $"TIME: {m}:{s:00}";
+        if (TxtTempo == null) return;
+        int minutos = Mathf.FloorToInt(_tempoRestante / 60f);
+        int segundos = Mathf.FloorToInt(_tempoRestante % 60f);
+        TxtTempo.text = $"TIME: {minutos}:{segundos:00}";
     }
 
-    void AtualizarTextoZoo()
+    void AtualizarZooUI()
     {
-        if (TXT_Zoo == null) return;
-        TXT_Zoo.text = $"ZOO: {_pontosZoo}";
+        if (TxtZoo == null) return;
+        TxtZoo.text = $"ZOO: {ContadorZoo}";
     }
 }

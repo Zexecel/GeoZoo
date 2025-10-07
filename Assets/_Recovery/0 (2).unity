@@ -127,26 +127,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1775131263}
     m_Modifications:
-    - target: {fileID: -3595925170217485989, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
-      propertyPath: MaoRoot
-      value: 
-      objectReference: {fileID: 1775131263}
-    - target: {fileID: -3595925170217485989, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
-      propertyPath: GridRoot
-      value: 
-      objectReference: {fileID: 447588600}
-    - target: {fileID: -3595925170217485989, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
-      propertyPath: DragLayer
-      value: 
-      objectReference: {fileID: 434462508}
-    - target: {fileID: -3595925170217485989, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
-      propertyPath: Raycaster
-      value: 
-      objectReference: {fileID: 1577803069}
-    - target: {fileID: -3595925170217485989, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
-      propertyPath: GridLayout
-      value: 
-      objectReference: {fileID: 447588601}
     - target: {fileID: 4947753714686005160, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -227,14 +207,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5630869088853004882, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
-      propertyPath: m_Sprite
+    - target: {fileID: 5420367885666713965, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
+      propertyPath: MaoRoot
       value: 
-      objectReference: {fileID: 21300000, guid: 2243ab0f7cd029249b2f5a6ac54a2337, type: 3}
-    - target: {fileID: 5630869088853004882, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
-      propertyPath: m_PreserveAspect
-      value: 1
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1775131263}
+    - target: {fileID: 5420367885666713965, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
+      propertyPath: GridRoot
+      value: 
+      objectReference: {fileID: 447588600}
+    - target: {fileID: 5420367885666713965, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
+      propertyPath: DragLayer
+      value: 
+      objectReference: {fileID: 434462508}
+    - target: {fileID: 5420367885666713965, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
+      propertyPath: Raycaster
+      value: 
+      objectReference: {fileID: 1577803069}
+    - target: {fileID: 5420367885666713965, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
+      propertyPath: BarraPecas
+      value: 
+      objectReference: {fileID: 1775131263}
+    - target: {fileID: 5420367885666713965, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
+      propertyPath: GridLayout
+      value: 
+      objectReference: {fileID: 447588601}
+    - target: {fileID: 5420367885666713965, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
+      propertyPath: GridValidator
+      value: 
+      objectReference: {fileID: 447588604}
     - target: {fileID: 8904426937450606356, guid: 0b9a2dd29e6102e4d9ff9cc6a7b63999, type: 3}
       propertyPath: m_Name
       value: PF_Peca_2
@@ -252,26 +252,34 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1775131263}
     m_Modifications:
-    - target: {fileID: -8899239649720238047, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+    - target: {fileID: -6918107705160134721, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
       propertyPath: MaoRoot
       value: 
       objectReference: {fileID: 1775131263}
-    - target: {fileID: -8899239649720238047, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+    - target: {fileID: -6918107705160134721, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
       propertyPath: GridRoot
       value: 
       objectReference: {fileID: 447588600}
-    - target: {fileID: -8899239649720238047, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+    - target: {fileID: -6918107705160134721, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
       propertyPath: DragLayer
       value: 
       objectReference: {fileID: 434462508}
-    - target: {fileID: -8899239649720238047, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+    - target: {fileID: -6918107705160134721, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
       propertyPath: Raycaster
       value: 
       objectReference: {fileID: 1577803069}
-    - target: {fileID: -8899239649720238047, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+    - target: {fileID: -6918107705160134721, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+      propertyPath: BarraPecas
+      value: 
+      objectReference: {fileID: 1775131263}
+    - target: {fileID: -6918107705160134721, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
       propertyPath: GridLayout
       value: 
       objectReference: {fileID: 447588601}
+    - target: {fileID: -6918107705160134721, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+      propertyPath: GridValidator
+      value: 
+      objectReference: {fileID: 447588604}
     - target: {fileID: 1183604096170099066, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -351,14 +359,6 @@ PrefabInstance:
     - target: {fileID: 1183604096170099066, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1936600580975729792, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: b00d3d629f7fa5740929bdfb743f33d3, type: 3}
-    - target: {fileID: 1936600580975729792, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
-      propertyPath: m_PreserveAspect
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3410935151251268038, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
       propertyPath: m_Name
@@ -519,8 +519,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 434462508}
-  - component: {fileID: 434462510}
-  - component: {fileID: 434462509}
   m_Layer: 0
   m_Name: UI_DragLayer
   m_TagString: Untagged
@@ -547,46 +545,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &434462509
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 434462507}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!223 &434462510
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 434462507}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 2
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 1
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
-  m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 1000
-  m_TargetDisplay: 0
 --- !u!1 &447588599
 GameObject:
   m_ObjectHideFlags: 0
@@ -599,6 +557,7 @@ GameObject:
   - component: {fileID: 447588603}
   - component: {fileID: 447588602}
   - component: {fileID: 447588601}
+  - component: {fileID: 447588604}
   m_Layer: 0
   m_Name: GRD_Tabuleiro
   m_TagString: Untagged
@@ -687,6 +646,22 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 447588599}
   m_CullTransparentMesh: 1
+--- !u!114 &447588604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 447588599}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 319d3fe35ae15b44fb885aa3ef0bae40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridValidator
+  GridRoot: {fileID: 447588600}
+  GridLayout: {fileID: 447588601}
+  DistanciaSnapMax: 80
+  SnappingAtivo: 1
 --- !u!1 &560384334
 GameObject:
   m_ObjectHideFlags: 0
@@ -870,31 +845,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 850967411}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a8ccfc4ce4bf63747a781d509ab15588, type: 3}
+  m_Script: {fileID: 11500000, guid: d6144f96330467d4194b639349128d26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeckController
   DeckBack: {fileID: 560384335}
   GridRoot: {fileID: 447588600}
-  DragLayer: {fileID: 434462508}
   PosPreviewLeft: {fileID: 1611312679}
-  PecaPrefab: {fileID: 893540121}
-  CartasFrente:
+  DragLayer: {fileID: 434462508}
+  Cartas:
   - {fileID: 21300000, guid: f0a058df68434d641893ad0acd1db994, type: 3}
-  CartaVerso: {fileID: 21300000, guid: dca99b6e9cfe8a348b428b21c02c8bbd, type: 3}
-  usarCellSizeDaGrelha: 1
-  tamanhoCarta: {x: 160, y: 160}
-  usarTamanhoDoDeckAoSair: 1
-  tDeckParaCentro: 0.8
-  tCentroParaPreview: 0.8
-  tPulseUp: 0.2
-  tPulseDown: 0.18
-  pausaNoCentro: 0.6
-  escalaCentro: 1.15
-  curvaPos:
-    serializedVersion: 2
+  DurAteCentro: 0.35
+  DurCentroAteEsquerda: 0.35
+  EscalaNoCentro: 1.2
+  EasePos:
     m_Curve:
-    - serializedVersion: 3
-      time: 0
+    - time: 0
       value: 0
       inSlope: 0
       outSlope: 0
@@ -902,8 +867,7 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-    - serializedVersion: 3
-      time: 1
+    - time: 1
       value: 1
       inSlope: 0
       outSlope: 0
@@ -914,11 +878,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  curvaScale:
-    serializedVersion: 2
+  EaseScale:
     m_Curve:
-    - serializedVersion: 3
-      time: 0
+    - time: 0
       value: 0
       inSlope: 0
       outSlope: 0
@@ -926,8 +888,7 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0
       outWeight: 0
-    - serializedVersion: 3
-      time: 1
+    - time: 1
       value: 1
       inSlope: 0
       outSlope: 0
@@ -1035,11 +996,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &893540121 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3410935151251268038, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
-  m_PrefabInstance: {fileID: 109314257}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &955227390
 GameObject:
   m_ObjectHideFlags: 0
@@ -1165,38 +1121,38 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 942766699427777440, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
-      propertyPath: m_Sprite
+    - target: {fileID: 578922647180794015, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
+      propertyPath: MaoRoot
       value: 
-      objectReference: {fileID: 21300000, guid: 25f6809e22948244aba5f7728384168d, type: 3}
-    - target: {fileID: 942766699427777440, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
-      propertyPath: m_PreserveAspect
-      value: 1
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1775131263}
+    - target: {fileID: 578922647180794015, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
+      propertyPath: GridRoot
+      value: 
+      objectReference: {fileID: 447588600}
+    - target: {fileID: 578922647180794015, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
+      propertyPath: DragLayer
+      value: 
+      objectReference: {fileID: 434462508}
+    - target: {fileID: 578922647180794015, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
+      propertyPath: Raycaster
+      value: 
+      objectReference: {fileID: 1577803069}
+    - target: {fileID: 578922647180794015, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
+      propertyPath: BarraPecas
+      value: 
+      objectReference: {fileID: 1775131263}
+    - target: {fileID: 578922647180794015, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
+      propertyPath: GridLayout
+      value: 
+      objectReference: {fileID: 447588601}
+    - target: {fileID: 578922647180794015, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
+      propertyPath: GridValidator
+      value: 
+      objectReference: {fileID: 447588604}
     - target: {fileID: 4081208852703606502, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
       propertyPath: m_Name
       value: PF_Peca_4
       objectReference: {fileID: 0}
-    - target: {fileID: 4779630085032247706, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
-      propertyPath: MaoRoot
-      value: 
-      objectReference: {fileID: 1775131263}
-    - target: {fileID: 4779630085032247706, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
-      propertyPath: GridRoot
-      value: 
-      objectReference: {fileID: 447588600}
-    - target: {fileID: 4779630085032247706, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
-      propertyPath: DragLayer
-      value: 
-      objectReference: {fileID: 434462508}
-    - target: {fileID: 4779630085032247706, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
-      propertyPath: Raycaster
-      value: 
-      objectReference: {fileID: 1577803069}
-    - target: {fileID: 4779630085032247706, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
-      propertyPath: GridLayout
-      value: 
-      objectReference: {fileID: 447588601}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1427,8 +1383,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1073594813}
   - component: {fileID: 1073594815}
+  - component: {fileID: 1073594814}
   - component: {fileID: 1073594816}
-  - component: {fileID: 1073594817}
   m_Layer: 0
   m_Name: GO_Sistemas
   m_TagString: Untagged
@@ -1451,6 +1407,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1577803072}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1073594814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1073594812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7231afe707c65c04ebd8c65efff5b505, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ControladorJogo
+  TXT_Tempo: {fileID: 0}
+  TXT_Zoo: {fileID: 0}
+  SegundosInicio: 150
 --- !u!114 &1073594815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1484,24 +1455,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GridValidator
   GridRoot: {fileID: 447588600}
   GridLayout: {fileID: 447588601}
-  DistanciaSnapMax: 80
+  DistanciaSnapMax: 60
   SnappingAtivo: 1
---- !u!114 &1073594817
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1073594812}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f88507d1c1fa254895a15ec14978064, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ControladorJogo
-  TxtTempo: {fileID: 1007277311}
-  TxtZoo: {fileID: 120494048}
-  TempoInicialSeg: 150
-  ContadorZoo: 0
 --- !u!224 &1111555481 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 547274221500290650, guid: b1c4eb27e56487348a0956bb7d1acff9, type: 3}
@@ -1905,38 +1860,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1775131263}
     m_Modifications:
-    - target: {fileID: -1736238926005578782, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
-      propertyPath: MaoRoot
-      value: 
-      objectReference: {fileID: 1775131263}
-    - target: {fileID: -1736238926005578782, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
-      propertyPath: GridRoot
-      value: 
-      objectReference: {fileID: 447588600}
-    - target: {fileID: -1736238926005578782, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
-      propertyPath: DragLayer
-      value: 
-      objectReference: {fileID: 434462508}
-    - target: {fileID: -1736238926005578782, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
-      propertyPath: Raycaster
-      value: 
-      objectReference: {fileID: 1577803069}
-    - target: {fileID: -1736238926005578782, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
-      propertyPath: GridLayout
-      value: 
-      objectReference: {fileID: 447588601}
     - target: {fileID: 409338940791830924, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
       propertyPath: m_Name
       value: PF_Peca_3
       objectReference: {fileID: 0}
-    - target: {fileID: 3465659673381143754, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
-      propertyPath: m_Sprite
+    - target: {fileID: 3820637264943355893, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
+      propertyPath: MaoRoot
       value: 
-      objectReference: {fileID: 21300000, guid: b00d3d629f7fa5740929bdfb743f33d3, type: 3}
-    - target: {fileID: 3465659673381143754, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
-      propertyPath: m_PreserveAspect
-      value: 1
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 1775131263}
+    - target: {fileID: 3820637264943355893, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
+      propertyPath: GridRoot
+      value: 
+      objectReference: {fileID: 447588600}
+    - target: {fileID: 3820637264943355893, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
+      propertyPath: DragLayer
+      value: 
+      objectReference: {fileID: 434462508}
+    - target: {fileID: 3820637264943355893, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
+      propertyPath: Raycaster
+      value: 
+      objectReference: {fileID: 1577803069}
+    - target: {fileID: 3820637264943355893, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
+      propertyPath: BarraPecas
+      value: 
+      objectReference: {fileID: 1775131263}
+    - target: {fileID: 3820637264943355893, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
+      propertyPath: GridLayout
+      value: 
+      objectReference: {fileID: 447588601}
+    - target: {fileID: 3820637264943355893, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
+      propertyPath: GridValidator
+      value: 
+      objectReference: {fileID: 447588604}
     - target: {fileID: 4221369613636770096, guid: 13c8510b0f75a6448880f179a2c9587c, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
