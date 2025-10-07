@@ -8,17 +8,16 @@ using UnityEngine.UI;
 public class Peca : MonoBehaviour,
     IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerDownHandler
 {
-    // -------- Foco exclusivo (apenas uma peça focada de cada vez) --------
+    // Foco exclusivo
     static Peca _focada;
     static void DefinirFoco(Peca nova) => _focada = nova;
-    // ---------------------------------------------------------------------
 
     [Header("Referências")]
-    public RectTransform DragLayer;         // UI_DragLayer (Canvas com Override Sorting ON)
+    public RectTransform DragLayer;         // UI_DragLayer
     public RectTransform GridRoot;          // GRD_Tabuleiro
     public GridLayoutGroup GridLayout;      // GridLayout do tabuleiro
     public RectTransform MaoRoot;           // UI_BarraPecas
-    public GraphicRaycaster Raycaster;      // GraphicRaycaster do Canvas principal
+    public GraphicRaycaster Raycaster;      // GraphicRaycaster do Canvas
 
     [Header("Comportamento")]
     public bool ajustarParaCellNaGrelha = true;
@@ -77,7 +76,6 @@ public class Peca : MonoBehaviour,
     {
         if (!PermissoesJogo.PodeInteragir || !permitirRotacao) return;
 
-        // roda se estiver a arrastar OU se for a focada
         bool possoRodar = _aArrastar || ReferenceEquals(_focada, this);
         if (possoRodar && !_aRodar)
         {
@@ -86,17 +84,12 @@ public class Peca : MonoBehaviour,
         }
     }
 
-    // -------------------------------------------------------------
-    // INTERAÇÃO
-    // -------------------------------------------------------------
     public void OnPointerDown(PointerEventData eventData)
     {
         if (!PermissoesJogo.PodeInteragir) return;
 
-        // esta peça fica focada
         DefinirFoco(this);
 
-        // botão direito = flip frente/verso só desta peça
         if (eventData.button == PointerEventData.InputButton.Right && _flip != null)
         {
             bool estaNaFrente = TryGetImageSprite() == _flip.SpriteFrente;
@@ -162,9 +155,6 @@ public class Peca : MonoBehaviour,
         VoltarParaMao();
     }
 
-    // -------------------------------------------------------------
-    // LÓGICA DE COLOCAÇÃO
-    // -------------------------------------------------------------
     void ColocarNaCelula(RectTransform celula)
     {
         _rt.SetParent(celula, worldPositionStays: false);
@@ -211,9 +201,6 @@ public class Peca : MonoBehaviour,
             _rt.sizeDelta = _sizeOriginalNaMao;
     }
 
-    // -------------------------------------------------------------
-    // ROTAÇÃO
-    // -------------------------------------------------------------
     System.Collections.IEnumerator RodarSuave(float delta)
     {
         _aRodar = true;
@@ -232,9 +219,6 @@ public class Peca : MonoBehaviour,
         _aRodar = false;
     }
 
-    // -------------------------------------------------------------
-    // RAYCAST / GRID
-    // -------------------------------------------------------------
     RectTransform EncontrarCelulaDebaixoDoCursor(PointerEventData eventData)
     {
         if (Raycaster == null || GridRoot == null) return null;
@@ -265,13 +249,8 @@ public class Peca : MonoBehaviour,
 
     bool CelulaEstaLivre(RectTransform celula) => celula.childCount == 0;
 
-    // -------------------------------------------------------------
-    // HELPERS
-    // -------------------------------------------------------------
     bool EstaEmGrelha(Transform t) => GridRoot && t && t.IsChildOf(GridRoot);
-
-    static bool TransformEhFilhoDe(Transform t, Transform pai)
-        => (t && pai) && (t == pai || t.IsChildOf(pai));
+    static bool TransformEhFilhoDe(Transform t, Transform pai) => (t && pai) && (t == pai || t.IsChildOf(pai));
 
     static RectTransform SobeAteFilhoDiretoDe(Transform t, Transform paiDireto)
     {
@@ -302,7 +281,6 @@ public class Peca : MonoBehaviour,
             var canvas = GetComponentInParent<Canvas>();
             if (canvas) Raycaster = canvas.GetComponent<GraphicRaycaster>();
         }
-
         if (!DragLayer)
         {
             var go = GameObject.Find("UI_DragLayer");
@@ -313,7 +291,6 @@ public class Peca : MonoBehaviour,
                 if (canvas) DragLayer = canvas.transform as RectTransform;
             }
         }
-
         if (!GridRoot)
         {
             var go = GameObject.Find("GRD_Tabuleiro");
@@ -330,7 +307,6 @@ public class Peca : MonoBehaviour,
             GridLayout = GridRoot.GetComponent<GridLayoutGroup>() ??
                          GridRoot.GetComponentInChildren<GridLayoutGroup>(true);
         }
-
         if (!MaoRoot)
         {
             var go = GameObject.Find("UI_BarraPecas");

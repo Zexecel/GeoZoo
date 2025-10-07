@@ -1,3 +1,4 @@
+// Assets/Scripts/ControladorJogo.cs
 using UnityEngine;
 using TMPro;
 
@@ -22,8 +23,6 @@ public class ControladorJogo : MonoBehaviour
         _tempoRestante = TempoInicialSeg;
         AtualizarTempoUI();
         AtualizarZooUI();
-
-        // arranca bloqueado (não deixar interagir/timer até comprar carta)
         PermissoesJogo.BloquearInteracao();
     }
 
@@ -45,22 +44,21 @@ public class ControladorJogo : MonoBehaviour
     public void IniciarTimer()
     {
         if (_timerAtivo) return;
-        _tempoRestante = Mathf.Max(0f, _tempoRestante);
         _timerAtivo = true;
     }
 
     public void PausarTimer() => _timerAtivo = false;
 
-    public void AdicionarTempo(int segundos)
-    {
-        _tempoRestante += Mathf.Max(0, segundos);
-        AtualizarTempoUI();
-    }
-
     public void AtualizarZoo(int novoValor)
     {
         ContadorZoo = novoValor;
         AtualizarZooUI();
+    }
+
+    public void AdicionarTempo(int segundos)
+    {
+        _tempoRestante += Mathf.Max(0, segundos);
+        AtualizarTempoUI();
     }
 
     void AtualizarTempoUI()

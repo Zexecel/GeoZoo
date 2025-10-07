@@ -1,55 +1,120 @@
+// Assets/Scripts/GridValidator.cs
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class GridValidator : MonoBehaviour
 {
-    [Header("Refs")]
-    public RectTransform GridRoot;     // GRD_Tabuleiro
-    public GridLayoutGroup GridLayout; // GridLayoutGroup do GRD_Tabuleiro
+    public static GridValidator Instancia;
 
-    [Header("Snap")]
-    public float DistanciaSnapMax = 80f;
-    public bool SnappingAtivo = true;
+    [Header("Referências")]
+    public RectTransform GridRoot;         // GRD_Tabuleiro
+    public GridLayoutGroup GridLayout;     // opcional
+    public int Colunas = 6;
+    public int Linhas  = 6;
 
-    public bool TentarEncaixar(Peca peca, RectTransform pecaRT)
+    [Header("Feedback")]
+    public bool LogNoConsole = true;
+
+    AnimalPattern _ativo;
+
+    void Awake()
     {
-        if (!SnappingAtivo || !GridRoot || !GridLayout || !pecaRT) return false;
+        Instancia = this;
+        if (!GridLayout && GridRoot) GridLayout = GridRoot.GetComponent<GridLayoutGroup>();
+    }
 
-        // posição da peça no espaço da grelha
-        Vector2 localPos;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            GridRoot,
-            RectTransformUtility.WorldToScreenPoint(null, pecaRT.position),
-            null,
-            out localPos
-        );
+    public void DefinirPadraoAtivo(AnimalPattern padrao)
+    {
+        _ativo = padrao;
+        if (LogNoConsole)
+            Debug.Log(_ativo ? $"[GridValidator] Padrão ativo: {_ativo.Id}" : "[GridValidator] Padrão ativo: (nenhum)");
+    }
 
-        var pad  = GridLayout.padding;
-        var cell = GridLayout.cellSize;
-        var gap  = GridLayout.spacing;
+    public void Validar()
+    {
+        if (_ativo == null || _ativo.Celulas == null || _ativo.Celulas.Count == 0)
+        {
+            if (LogNoConsole) Debug.Log("[GridValidator] Sem padrão ativo.");
+            return;
+        }
 
-        float left = -GridRoot.rect.width * 0.5f + pad.left + cell.x * 0.5f;
-        float top  =  GridRoot.rect.height * 0.5f - pad.top  - cell.y * 0.5f;
+        var mapa = ConstruirMapa();
 
-        float stepX = cell.x + gap.x;
-        float stepY = cell.y + gap.y;
+        for (int y0 = 0; y0 <= Linhas - _ativo.Altura; y0++)
+        {
+            for (int x0 = 0; x0 <= Colunas - _ativo.Largura; x0++)
+            {
+                if (MatchEm(mapa, x0, y0))
+                {
+                    if (LogNoConsole) Debug.Log($"[GridValidator] Match! Anchor=({x0},{y0}) -> +20s e +1 ZOO");
+                    ControladorJogo.Instancia?.AdicionarTempo(20);
+                    if (ControladorJogo.Instancia != null)
+                        ControladorJogo.Instancia.AtualizarZoo(ControladorJogo.Instancia.ContadorZoo + 1);
+                    return;
+                }
+            }
+        }
 
-        int col = Mathf.RoundToInt((localPos.x - left) / stepX);
-        int row = Mathf.RoundToInt((top - localPos.y) / stepY);
+        if (LogNoConsole) Debug.Log("[GridValidator] Ainda não corresponde ao padrão.");
+    }
 
-        Vector2 posSnap = new Vector2(left + col * stepX, top - row * stepY);
+    struct CelInfo { public TileID tile; }
 
-        if (Vector2.Distance(localPos, posSnap) > DistanciaSnapMax) return false;
+    Dictionary<(int x, int y), CelInfo> ConstruirMapa()
+    {
+        var map = new Dictionary<(int x, int y), CelInfo>(Colunas * Linhas);
 
-        // passa a filha da grelha e garante topo
-        pecaRT.SetParent(GridRoot, false);
-        pecaRT.SetAsLastSibling();
+        bool usouCelulaComp = false;
+        for (int i = 0; i < GridRoot.childCount; i++)
+        {
+            var cel = GridRoot.GetChild(i) as RectTransform;
+            if (cel == null) continue;
 
-        // normaliza
-        pecaRT.anchoredPosition = new Vector2(Mathf.Round(posSnap.x), Mathf.Round(posSnap.y));
-        pecaRT.localRotation = Quaternion.identity;
-        pecaRT.localScale    = Vector3.one;
+            var ct = cel.GetComponent<CelulaTabuleiro>();
+            if (ct != null)
+            {
+                usouCelulaComp = true;
+                TileID tile = null;
+                if (cel.childCount > 0) tile = cel.GetChild(0).GetComponent<TileID>();
+                map[(ct.X, ct.Y)] = new CelInfo { tile = tile };
+            }
+        }
 
+        if (!usouCelulaComp)
+        {
+            int idx = 0;
+            for (int y = 0; y < Linhas; y++)
+            {
+                for (int x = 0; x < Colunas; x++)
+                {
+                    if (idx >= GridRoot.childCount) break;
+                    var cel = GridRoot.GetChild(idx++) as RectTransform;
+                    TileID tile = null;
+                    if (cel != null && cel.childCount > 0)
+                        tile = cel.GetChild(0).GetComponent<TileID>();
+                    map[(x, y)] = new CelInfo { tile = tile };
+                }
+            }
+        }
+
+        return map;
+    }
+
+    bool MatchEm(Dictionary<(int x, int y), CelInfo> map, int x0, int y0)
+    {
+        for (int i = 0; i < _ativo.Celulas.Count; i++)
+        {
+            var req = _ativo.Celulas[i];
+            int gx = x0 + req.X;
+            int gy = y0 + req.Y;
+            if (!map.TryGetValue((gx, gy), out var cel)) return false;
+            if (cel.tile == null) return false;
+
+            if (cel.tile.Tipo != req.Tipo) return false;
+            int rotReq = _ativo.RotacaoGraus(req.RotacaoSteps);
+            if (cel.tile.Rotacao90 != rotReq) return false;
+        }
         return true;
     }
 }

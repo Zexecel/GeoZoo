@@ -1465,11 +1465,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GestorGrelha
   PaiTabuleiro: {fileID: 447588600}
   PrefabCelula: {fileID: 8374175897678283055, guid: 6dc106c01ab1a5147b303354805f1e65, type: 3}
-  Colunas: 4
-  Linhas: 3
   PaiBarraPecas: {fileID: 1775131263}
   PrefabPeca: {fileID: 3410935151251268038, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
-  PecasIniciais: 0
+  GridRoot: {fileID: 447588600}
+  GridLayout: {fileID: 447588601}
+  Colunas: 4
+  Linhas: 3
+  RecriarAoIniciar: 1
+  CriarImagemNasCelulas: 1
+  SpriteCelula: {fileID: 0}
+  AlphaCelula: 0.08
+  MaoRoot: {fileID: 1775131263}
+  PrefabsPeca:
+  - {fileID: 3410935151251268038, guid: e6ab340c0d0304d4886814535ad5b09e, type: 3}
+  PecasIniciaisNaMao: 00000000010000000200000003000000
+  SpawnPecasNaMaoAoIniciar: 1
+  IgnorarSpawnSeJaExistiremPecasNaMao: 1
 --- !u!114 &1073594816
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1484,8 +1495,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GridValidator
   GridRoot: {fileID: 447588600}
   GridLayout: {fileID: 447588601}
-  DistanciaSnapMax: 80
-  SnappingAtivo: 1
+  Colunas: 6
+  Linhas: 6
+  LogNoConsole: 1
 --- !u!114 &1073594817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1790,6 +1802,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85ae44aab6f128b4ebc0f10ac9ed5beb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DesafioRuntime
+  animalAlvoId: LEAO
 --- !u!4 &1878198174
 Transform:
   m_ObjectHideFlags: 0

@@ -4,11 +4,6 @@ using UnityEditor;
 using UnityEngine.UI;
 using TMPro;
 
-/// <summary>
-/// Constrói a cena base do GeoZoo (Canvas, Grid, Barra de Peças, HUD, GO_Sistemas)
-/// e liga automaticamente os scripts. Também cria os prefabs PF_Celula e PF_Peca.
-/// Menu: Tools/GeoZoo/Build Base Scene
-/// </summary>
 public static class GeoZooSceneBuilder
 {
     [MenuItem("Tools/GeoZoo/Build Base Scene")]
@@ -54,6 +49,18 @@ public static class GeoZooSceneBuilder
         hlg.childAlignment = TextAnchor.MiddleCenter;
         hlg.spacing = 20;
 
+        // UI_DragLayer
+        var dragLayer = new GameObject("UI_DragLayer", typeof(RectTransform), typeof(Canvas), typeof(GraphicRaycaster));
+        dragLayer.transform.SetParent(canvasGO.transform, false);
+        var dlRT = dragLayer.GetComponent<RectTransform>();
+        dlRT.anchorMin = Vector2.zero;
+        dlRT.anchorMax = Vector2.one;
+        dlRT.offsetMin = Vector2.zero;
+        dlRT.offsetMax = Vector2.zero;
+        var dlCanvas = dragLayer.GetComponent<Canvas>();
+        dlCanvas.overrideSorting = true;
+        dlCanvas.sortingOrder = 1000;
+
         // UI_HUD
         var hud = new GameObject("UI_HUD", typeof(RectTransform));
         hud.transform.SetParent(canvasGO.transform, false);
@@ -64,7 +71,7 @@ public static class GeoZooSceneBuilder
         hudRT.sizeDelta = new Vector2(0, 120);
         hudRT.anchoredPosition = new Vector2(0, -20);
 
-        // TMP check
+        // TMP Essentials
         if (TMP_Settings.instance == null)
         {
             if (EditorUtility.DisplayDialog("TextMeshPro", "Os TMP Essentials não estão importados.\nQueres importar agora?", "Importar", "Cancelar"))
@@ -103,19 +110,22 @@ public static class GeoZooSceneBuilder
         var sistemas = new GameObject("GO_Sistemas");
         sistemas.transform.SetParent(canvasGO.transform, false);
 
-        // Adicionar scripts (se existirem)
         var gg = sistemas.AddComponent<GestorGrelha>();
         var cj = sistemas.AddComponent<ControladorJogo>();
 
-        // Criar prefabs rápidos PF_Celula e PF_Peca
-        var pfCelula = new GameObject("PF_Celula", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(CelulaTabuleiro));
-        var pfPeca = new GameObject("PF_Peca", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(CanvasGroup), typeof(Peca));
+        // Prefabs rápidos
+        var pfCelula = new GameObject("PF_Celula",
+            typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(CelulaTabuleiro));
 
-        // Cores placeholders
+        var pfPeca = new GameObject("PF_Peca",
+            typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(CanvasGroup),
+            typeof(Peca), typeof(PecaFlip), typeof(TileID)); // 👈 adicionados
+
         pfCelula.GetComponent<Image>().color = Color.white;
-        pfPeca.GetComponent<Image>().color = new Color(0.2f, 0.5f, 1f, 1f);
+        var imgPeca = pfPeca.GetComponent<Image>();
+        imgPeca.color = new Color(0.2f, 0.5f, 1f, 1f);
+        imgPeca.preserveAspect = true;
 
-        // Guardar como assets em Assets/Prefabs
         string prefabDir = "Assets/Prefabs";
         if (!System.IO.Directory.Exists(prefabDir))
             System.IO.Directory.CreateDirectory(prefabDir);
@@ -125,23 +135,22 @@ public static class GeoZooSceneBuilder
 
         var celulaPrefab = PrefabUtility.SaveAsPrefabAsset(pfCelula, celulaPath);
         var pecaPrefab   = PrefabUtility.SaveAsPrefabAsset(pfPeca, pecaPath);
-
-        // Limpar instâncias temporárias na cena
         Object.DestroyImmediate(pfCelula);
         Object.DestroyImmediate(pfPeca);
 
-        // Ligar referências
-        gg.PaiTabuleiro = grd.transform;
-        gg.PrefabCelula = celulaPrefab;
-        gg.PaiBarraPecas = barra.transform;
-        gg.PrefabPeca = pecaPrefab;
+        // Ligar referências (usar RectTransform nos aliases)
+        gg.PaiTabuleiro  = grd.transform  as RectTransform;
+        gg.PrefabCelula  = celulaPrefab;
+        gg.PaiBarraPecas = barra.transform as RectTransform;
+        gg.PrefabPeca    = pecaPrefab;
+
+        gg.GridRoot = gg.PaiTabuleiro;
+        gg.MaoRoot  = gg.PaiBarraPecas;
 
         cj.TxtTempo = tempoTMP;
-        cj.TxtZoo = zooTMP;
+        cj.TxtZoo   = zooTMP;
 
-        // Selecionar Canvas para ver tudo no Inspector
         Selection.activeGameObject = canvasGO;
-
         EditorUtility.DisplayDialog("GeoZoo", "Cena base construída!\nCarrega Play para testar o drag & drop.", "OK");
     }
 }

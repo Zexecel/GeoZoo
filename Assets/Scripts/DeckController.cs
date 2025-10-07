@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class DeckController : MonoBehaviour
 {
     [Header("Referências de UI")]
-    public RectTransform DeckBack;         // IMG_DeckBack (botão)
+    public RectTransform DeckBack;         // IMG_DeckBack (botão do deck)
     public RectTransform GridRoot;         // GRD_Tabuleiro
     public RectTransform DragLayer;        // UI_DragLayer (Canvas Override Sorting ON)
     public RectTransform PosPreviewLeft;   // alvo de preview à esquerda
@@ -39,7 +39,6 @@ public class DeckController : MonoBehaviour
 
     void Awake()
     {
-        // baralhar
         var pool = new List<Sprite>(CartasFrente);
         for (int i = 0; i < pool.Count; i++) { int j = Random.Range(i, pool.Count); (pool[i], pool[j]) = (pool[j], pool[i]); }
         _deck = new Queue<Sprite>(pool);
@@ -60,28 +59,23 @@ public class DeckController : MonoBehaviour
             return;
         }
 
-        // Garantir layer por cima
         var dlCanvas = DragLayer.GetComponent<Canvas>() ?? DragLayer.gameObject.AddComponent<Canvas>();
         dlCanvas.overrideSorting = true;
         if (dlCanvas.sortingOrder < 1000) dlCanvas.sortingOrder = 1000;
         if (!DragLayer.GetComponent<GraphicRaycaster>()) DragLayer.gameObject.AddComponent<GraphicRaycaster>();
         DragLayer.SetAsLastSibling();
 
-        // carta da frente (baralho)
         var spriteFrente = (_deck != null && _deck.Count > 0) ? _deck.Dequeue() : null;
 
-        // instanciar
         var go = Instantiate(PecaPrefab, DragLayer, false);
         var rt = go.GetComponent<RectTransform>();
         var img = go.GetComponent<Image>();
         var cg  = go.GetComponent<CanvasGroup>() ?? go.AddComponent<CanvasGroup>();
         var flip = go.GetComponent<PecaFlip>() ?? go.AddComponent<PecaFlip>();
 
-        // rect
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot     = new Vector2(0.5f, 0.5f);
 
-        // tamanho
         if (usarTamanhoDoDeckAoSair)       rt.sizeDelta = DeckBack.rect.size;
         else if (usarCellSizeDaGrelha && GridRoot)
         {
@@ -90,57 +84,52 @@ public class DeckController : MonoBehaviour
         }
         else                               rt.sizeDelta = tamanhoCarta;
 
-        // preparar flip: começa em VERSO
         if (img) { img.enabled = true; img.raycastTarget = false; img.preserveAspect = true; }
         cg.alpha = 1f; cg.blocksRaycasts = false;
-        flip.Configurar(spriteFrente, CartaVerso);   // frente = animal, verso = capa do tile
-        flip.MostrarVerso();                         // sair do deck em verso
+        flip.Configurar(spriteFrente, CartaVerso);
+        flip.iniciarNaFrente = false;
+        flip.MostrarVerso();
 
-        // desativar lógica da peça durante anim
         var peca = go.GetComponent<Peca>(); if (peca) peca.enabled = false;
 
         Canvas.ForceUpdateCanvases();
 
-        // posição inicial (WORLD-SPACE) sobre o deck
         rt.position = WorldCenter(DeckBack);
         rt.localScale = Vector3.one;
         rt.SetAsLastSibling();
 
-        StartCoroutine(AnimacaoCartaWorld(go, rt, peca, flip));
+        StartCoroutine(AnimacaoCartaWorld(go, rt, peca, flip, spriteFrente));
     }
 
-    IEnumerator AnimacaoCartaWorld(GameObject go, RectTransform rt, Peca pecaParaReativar, PecaFlip flip)
+    IEnumerator AnimacaoCartaWorld(GameObject go, RectTransform rt, Peca pecaParaReativar, PecaFlip flip, Sprite spriteFrente)
     {
         Vector3 pDeck   = WorldCenter(DeckBack);
         Vector3 pPrev   = PosPreviewLeft ? WorldCenter(PosPreviewLeft) : (pDeck + Vector3.left * 600f);
         Vector3 pCentro = GridRoot ? WorldCenter(GridRoot) : (pDeck + new Vector3(0f, 120f, 0f));
 
-        // 1) DECK -> CENTRO
         yield return MoverWorld(rt, pDeck, pCentro, tDeckParaCentro, curvaPos, true);
-
-        // 2) Pulse Up
         yield return Escalar(rt, 1f, escalaCentro, tPulseUp, curvaScale);
 
-        // >>> FLIP AQUI (no topo do pulse) <<<
         if (flip != null) yield return flip.FlipParaFrente();
 
-        // 3) Pausa para ler a carta
+        // ligar padrão ativo desta carta
+        var registry = PatternRegistry.Instancia;
+        if (registry != null && spriteFrente != null)
+        {
+            var padrao = registry.ObterPorCarta(spriteFrente);
+            GridValidator.Instancia?.DefinirPadraoAtivo(padrao);
+        }
+
         if (pausaNoCentro > 0f) yield return new WaitForSecondsRealtime(pausaNoCentro);
-
-        // 4) Pulse Down
         yield return Escalar(rt, escalaCentro, 1f, tPulseDown, curvaScale);
-
-        // 5) CENTRO -> PREVIEW ESQUERDA
         yield return MoverWorld(rt, pCentro, pPrev, tCentroParaPreview, curvaPos, true);
 
-        // Reativar interação da peça
         var img = go.GetComponent<Image>();
         var cg  = go.GetComponent<CanvasGroup>();
         if (img) img.raycastTarget = true;
         if (cg)  cg.blocksRaycasts = true;
         if (pecaParaReativar) pecaParaReativar.enabled = true;
 
-        // Liberta interação / arranca timer só na 1ª carta
         if (!_jaIniciouTudo && !PermissoesJogo.JaLibertou)
         {
             _jaIniciouTudo = true;

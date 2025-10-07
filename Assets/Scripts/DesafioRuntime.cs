@@ -1,19 +1,19 @@
+// Assets/Scripts/DesafioRuntime.cs
 using UnityEngine;
 
+/// <summary>
+/// Mantém o ID do animal atualmente pedido ao jogador.
+/// </summary>
 public class DesafioRuntime : MonoBehaviour
 {
-    public static DesafioRuntime Instancia { get; private set; }
-    public DesafioCarta DesafioAtual { get; private set; }
+    [SerializeField] private string animalAlvoId = "LEAO"; // exemplo default
 
-    void Awake()
-    {
-        if (Instancia != null && Instancia != this) { Destroy(gameObject); return; }
-        Instancia = this;
-        DontDestroyOnLoad(gameObject);
-    }
+    // Propriedade esperada pelo GridValidator
+    public string AnimalAlvoId => animalAlvoId;
 
-    public void DefinirDesafio(DesafioCarta desafio)
+    // Podes usar isto quando trocares de carta
+    public void DefinirAnimalAlvo(string novoId)
     {
-        DesafioAtual = desafio;
+        animalAlvoId = novoId;
     }
 }
